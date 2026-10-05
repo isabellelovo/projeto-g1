@@ -9,44 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background-color: #f7f9fa;
-        }
-
-        .block-container {
-            max-width: 1100px;
-            padding-top: 2rem;
-            padding-bottom: 3rem;
-        }
-
-        section[data-testid="stSidebar"] {
-            background-color: #eef2f4;
-        }
-
-        div[data-testid="stMetric"] {
-            background-color: white;
-            border: 1px solid #dbe3e8;
-            border-radius: 10px;
-            padding: 14px;
-        }
-
-        h1, h2, h3 {
-            color: #34424c;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid #dbe3e8;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 df = pd.read_csv("simulacao_clima_brasil.csv")
 
 df = df.drop_duplicates()
@@ -253,7 +215,8 @@ plt.close(fig)
 st.divider()
 
 st.subheader("Correlação entre variáveis")
-st.caption("Valores mais próximos de 1 ou -1 indicam relações mais fortes entre as variáveis.")
+st.caption(
+    "Valores mais próximos de 1 ou -1 indicam relações mais fortes entre as variáveis.")
 
 correlacao_filtrada = df_filtrado[colunas].corr()
 
