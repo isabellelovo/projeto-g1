@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-df = pd.read_csv("simulacao_clima_brasil.csv")
+df = pd.read_csv("dados/simulacao_clima_brasil.csv")
 
 df = df.drop_duplicates()
 
@@ -92,15 +92,15 @@ colunas = [
 
 correlacao = df[colunas].corr()
 
-st.title("Análise Climática no Brasil")
+st.title("Análise Climática e Eventos Extremos no Brasil")
 
 st.write(
-    "Explore as condições climáticas registradas entre 2015 e 2024 e compare "
-    "a ocorrência de eventos extremos entre diferentes regiões e períodos."
+    "Análise das condições climáticas registradas entre 2015 e 2024, "
+    "com foco na ocorrência de eventos extremos e nas diferenças "
+    "entre regiões e períodos."
 )
 
 st.sidebar.header("Filtros")
-st.sidebar.caption("Selecione as opções para atualizar os resultados.")
 
 ano = st.sidebar.multiselect(
     "Ano",
@@ -137,9 +137,6 @@ percentual = (
     df_filtrado["teve_evento_extremo"].eq("Sim").mean() * 100
 )
 
-st.subheader("Visão geral")
-st.caption("Principais indicadores dos dados selecionados.")
-
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("Temperatura média", f"{temperatura:.2f} °C")
@@ -147,10 +144,7 @@ col2.metric("Chuva média", f"{chuva:.2f} mm")
 col3.metric("Eventos extremos", int(eventos))
 col4.metric("Registros com eventos", f"{percentual:.2f}%")
 
-st.divider()
-
-st.subheader("Dados por região")
-st.caption("Comparação das médias e do total de eventos extremos em cada região.")
+st.subheader("Dados por Região")
 
 tabela = df_filtrado.groupby("regiao").agg(
     temperatura_media=("temperatura_media", "mean"),
@@ -160,9 +154,7 @@ tabela = df_filtrado.groupby("regiao").agg(
 
 st.dataframe(tabela.round(2), use_container_width=True)
 
-st.divider()
-
-st.subheader("Eventos extremos por ano")
+st.subheader("Eventos Extremos por Ano")
 
 eventos_ano_filtrado = (
     df_filtrado.groupby("ano")["eventos_extremos"].sum()
@@ -185,9 +177,7 @@ st.pyplot(fig)
 
 plt.close(fig)
 
-st.divider()
-
-st.subheader("Eventos extremos por região")
+st.subheader("Eventos Extremos por Região")
 
 eventos_regiao_filtrado = (
     df_filtrado.groupby("regiao")["eventos_extremos"]
@@ -212,11 +202,7 @@ st.pyplot(fig)
 
 plt.close(fig)
 
-st.divider()
-
-st.subheader("Correlação entre variáveis")
-st.caption(
-    "Valores mais próximos de 1 ou -1 indicam relações mais fortes entre as variáveis.")
+st.subheader("Correlação entre Variáveis")
 
 correlacao_filtrada = df_filtrado[colunas].corr()
 
@@ -236,9 +222,7 @@ st.pyplot(fig)
 
 plt.close(fig)
 
-st.divider()
-
-st.subheader("Resumo dos resultados")
+st.subheader("Interpretação")
 
 eventos_regiao_filtrado = (
     df_filtrado.groupby("regiao")["eventos_extremos"]
@@ -259,10 +243,15 @@ if not eventos_regiao_filtrado.empty:
         f"foi de {chuva:.2f} mm."
     )
 
-st.subheader("Conclusão")
+st.subheader("Conclusão Executiva")
 
 st.write(
     "Os resultados permitem comparar as condições climáticas e a "
     "ocorrência de eventos extremos entre diferentes períodos e regiões. "
     "Os indicadores são atualizados conforme os filtros selecionados."
+)
+
+st.write(
+    "Por se tratar de uma base simulada, os resultados representam "
+    "os padrões encontrados nos dados analisados."
 )
