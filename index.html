@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clima no Brasil (G1)</title>
+
+    <style>
+        :root {
+            --blue: #3b82b8;
+            --blue-dark: #245f85;
+            --blue-light: #eaf5fb;
+            --yellow: #f2c94c;
+            --yellow-light: #fff8df;
+            --gray-dark: #34424c;
+            --gray: #6b7780;
+            --gray-light: #eef2f4;
+            --white: #ffffff;
+            --border: #dbe3e8;
+            --shadow: 0 6px 18px rgba(52, 66, 76, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f7f9fa;
+            color: var(--gray-dark);
+            line-height: 1.65;
+        }
+
+        .container {
+            width: min(1080px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        /* Cabeçalho */
+        header {
+            position: relative;
+            overflow: hidden;
+            padding: 72px 0 62px;
+            background:
+                radial-gradient(circle at 82% 22%, rgba(242, 201, 76, 0.95) 0 52px, transparent 54px),
+                linear-gradient(135deg, #dce9ef 0%, #8fc4df 48%, #4e91b8 100%);
+            color: #17384c;
+        }
+
+        header::after {
+            content: "";
+            position: absolute;
+            left: -4%;
+            right: -4%;
+            bottom: -36px;
+            height: 70px;
+            background: #f7f9fa;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 760px;
+        }
+
+        header h1 {
+            margin: 0 0 12px;
+            font-size: clamp(2rem, 5vw, 3rem);
+            line-height: 1.15;
+        }
+
+        header p {
+            max-width: 680px;
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        /* Navegação */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+        }
+
+        .nav-inner {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            overflow-x: auto;
+            padding: 11px 0;
+        }
+
+        nav a {
+            flex: 0 0 auto;
+            padding: 7px 11px;
+            border-radius: 7px;
+            color: var(--blue-dark);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background: var(--blue-light);
+        }
+
+        /* Estrutura geral */
+        main {
+            padding-top: 20px;
+        }
+
+        section {
+            padding: 32px 0 8px;
+            scroll-margin-top: 72px;
+        }
+
+        .section-title {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 7px;
+            height: 28px;
+            border-radius: 10px;
+            background: var(--yellow);
+        }
+
+        h2 {
+            margin: 0;
+            color: #263943;
+            font-size: 1.55rem;
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            color: var(--blue-dark);
+            font-size: 1.05rem;
+        }
+
+        p {
+            margin-top: 0;
+        }
+
+        .card {
+            padding: 24px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        /* Identificação */
+        .identification {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .identification-item {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .identification-item:nth-child(odd) {
+            border-right: 1px solid var(--border);
+        }
+
+        .identification-item:nth-last-child(-n + 2) {
+            border-bottom: 0;
+        }
+
+        .identification-item span {
+            display: block;
+            margin-bottom: 3px;
+            color: var(--gray);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .identification-item strong {
+            font-size: 1rem;
+        }
+
+        /* Destaque */
+        .highlight {
+            margin-top: 18px;
+            padding: 17px 19px;
+            background: var(--yellow-light);
+            border-left: 5px solid var(--yellow);
+            border-radius: 8px;
+        }
+
+
+        /* Base e análises */
+        .info-card {
+            min-height: 145px;
+        }
+
+        .info-card p {
+            margin-bottom: 0;
+        }
+
+        .steps {
+            margin: 0;
+            padding-left: 24px;
+        }
+
+        .steps li {
+            margin: 11px 0;
+            padding-left: 4px;
+        }
+
+        /* Tecnologias */
+        .tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tech span {
+            padding: 8px 14px;
+            background: var(--gray-light);
+            border: 1px solid #d8e0e4;
+            border-radius: 999px;
+            color: var(--gray-dark);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .tech span:nth-child(3n + 1) {
+            background: var(--blue-light);
+            border-color: #c9e2ef;
+            color: var(--blue-dark);
+        }
+
+        .tech span:nth-child(3n + 2) {
+            background: var(--yellow-light);
+            border-color: #f2dfa0;
+        }
+
+        /* Botões */
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 17px;
+            background: var(--blue);
+            border: 1px solid var(--blue);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--blue-dark);
+            border-color: var(--blue-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary {
+            background: var(--white);
+            color: var(--blue-dark);
+        }
+
+        .btn.secondary:hover {
+            background: var(--blue-light);
+        }
+
+        /* Rodapé */
+        footer {
+            margin-top: 58px;
+            padding: 30px 20px;
+            background: #34424c;
+            color: #e8eef1;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            margin: 3px 0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 850px) {
+            .kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                width: min(100% - 28px, 1080px);
+            }
+
+            header {
+                padding: 58px 0 52px;
+            }
+
+            .grid,
+            .kpis,
+            .identification {
+                grid-template-columns: 1fr;
+            }
+
+            .identification-item,
+            .identification-item:nth-child(odd),
+            .identification-item:nth-last-child(-n + 2) {
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .identification-item:last-child {
+                border-bottom: 0;
+            }
+
+            section {
+                padding-top: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Análise Climática no Brasil</h1>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container nav-inner">
+            <a href="#identificacao">Identificação</a>
+            <a href="#sobre">Sobre</a>
+            <a href="#tecnologias">Tecnologias</a>
+            <a href="#arquivos">Arquivos</a>
+            <a href="#dashboard">Dashboard</a>
+            <a href="#analises">Análise</a>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- Identificação -->
+        <section id="identificacao">
+            <div class="section-title">
+                <h2>Identificação</h2>
+            </div>
+
+            <div class="card identification">
+                <div class="identification-item">
+                    <span>Discente</span>
+                    <strong>Isabelle Pinheiro Lovo</strong>
+                </div>
+
+                <div class="identification-item">
+                    <span>RA</span>
+                    <strong>1016112</strong>
+                </div>
+
+                <div class="identification-item">
+                    <span>Disciplina</span>
+                    <strong>Linguagens de Programação</strong>
+                </div>
+
+                <div class="identification-item">
+                    <span>Docente</span>
+                    <strong>Alexandre Neves Louzada</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sobre o projeto -->
+        <section id="sobre">
+            <div class="section-title">
+                <h2>Sobre o projeto</h2>
+            </div>
+
+            <div class="card">
+                <p>
+                    Este projeto apresenta uma análise de dados climáticos de diferentes
+                    regiões e cidades brasileiras no período de <strong>2015 a 2024</strong>.
+                </p>
+
+                <p>
+                    A análise considera informações como temperatura, volume de chuva,
+                    umidade, velocidade do vento, eventos extremos e níveis de alerta.
+                </p>
+
+                <p>
+                    O objetivo é observar como as condições climáticas variam ao longo do
+                    tempo e entre diferentes localidades, permitindo comparar os dados e
+                    identificar os principais padrões encontrados.
+                </p>
+
+                <div class="highlight">
+                    O projeto reúne análise, visualização de dados e um dashboard interativo
+                    para apresentar as informações de forma clara e fácil de explorar.
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Tecnologias -->
+        <section id="tecnologias">
+            <div class="section-title">
+                <h2>Tecnologias utilizadas</h2>
+            </div>
+
+            <div class="card">
+                <p>
+                    As seguintes tecnologias e bibliotecas foram utilizadas para preparar,
+                    analisar e apresentar os dados:
+                </p>
+
+                <div class="tech">
+                    <span>Python</span>
+                    <span>Pandas</span>
+                    <span>NumPy</span>
+                    <span>Matplotlib</span>
+                    <span>Seaborn</span>
+                    <span>Streamlit</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Arquivos -->
+        <section id="arquivos">
+            <div class="section-title">
+                <h2>Arquivos do projeto</h2>
+            </div>
+
+            <div class="card">
+                <p>
+                    Os principais arquivos utilizados no desenvolvimento do projeto podem
+                    ser acessados abaixo.
+                </p>
+
+                <div class="buttons">
+                    <a class="btn" href="analise_clima.ipynb">
+                        Ver Notebook
+                    </a>
+
+                    <a class="btn secondary" href="simulacao_clima_brasil.csv">
+                        Baixar Base de Dados
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section id="dashboard">
+            <div class="section-title">
+                <h2>Dashboard interativo</h2>
+            </div>
+
+            <div class="card">
+                <p>
+                    O dashboard foi desenvolvido com Streamlit para reunir as principais
+                    informações da análise em uma interface simples e interativa.
+                </p>
+
+                <p>
+                    É possível filtrar os dados por <strong>ano, região e nível de alerta</strong>.
+                    Ao alterar os filtros, os indicadores, tabelas e gráficos são atualizados
+                    para representar apenas os dados selecionados.
+                </p>
+
+                <div class="buttons">
+                    <a class="btn" href="https://projeto-g1-isabellelovo.streamlit.app/" target="_blank"
+                        rel="noopener noreferrer">
+                        Acessar Dashboard Streamlit
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Análises apresentadas -->
+        <section id="analises">
+            <div class="section-title">
+                <h2>Análises apresentadas</h2>
+            </div>
+
+            <div class="grid">
+                <div class="card info-card">
+                    <h3>Eventos por ano</h3>
+                    <p>
+                        Mostra como a quantidade de eventos extremos varia ao longo dos
+                        anos analisados.
+                    </p>
+                </div>
+
+                <div class="card info-card">
+                    <h3>Eventos por região</h3>
+                    <p>
+                        Compara a quantidade de eventos extremos registrada em cada região.
+                    </p>
+                </div>
+
+                <div class="card info-card">
+                    <h3>Correlação</h3>
+                    <p>
+                        Ajuda a observar possíveis relações entre temperatura, chuva,
+                        umidade, vento e eventos extremos.
+                    </p>
+                </div>
+
+                <div class="card info-card">
+                    <h3>Comparação regional</h3>
+                    <p>
+                        Reúne informações de temperatura, chuva e eventos para facilitar
+                        a comparação entre as regiões.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p><strong>Projeto: Clima no Brasil</strong></p>
+        <p>Linguagens de Programação — 2026.2</p>
+    </footer>
+</body>
+
+</html>
