@@ -7,7 +7,6 @@ import seaborn as sns
 st.set_page_config(
     page_title="Dashboard Climático no Brasil",
     page_icon="☀️",
-    layout="wide"
 )
 
 st.markdown(
