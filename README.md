@@ -69,20 +69,12 @@ projeto-g1/
 
 ## Indicadores utilizados
 
-  -----------------------------------------------------------------------
-  Indicador                           Descrição
-  ----------------------------------- -----------------------------------
-  Temperatura média                   Média da temperatura nos dados
-                                      selecionados
+O projeto utiliza quatro indicadores principais para resumir as condições climáticas de acordo com os dados e filtros selecionados:
 
-  Chuva média                         Média do volume de chuva registrado
-
-  Eventos extremos                    Total de eventos extremos
-                                      registrados
-
-  Registros com eventos               Percentual de registros que
-                                      apresentam eventos extremos
-  -----------------------------------------------------------------------
+- **Temperatura média (°C):** representa a média das temperaturas registradas.
+- **Chuva média (mm):** representa a média do volume de chuva registrado.
+- **Eventos extremos:** apresenta a quantidade total de eventos extremos registrados.
+- **Registros com eventos (%):** indica o percentual de registros em que ocorreu pelo menos um evento extremo.
 
 ## Como executar o projeto
 
