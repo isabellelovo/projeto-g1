@@ -38,6 +38,15 @@ As principais análises realizadas são:
 -   percentual de registros com eventos extremos;
 -   relação entre temperatura, chuva, umidade, vento e eventos extremos.
 
+## Indicadores utilizados
+
+O projeto utiliza quatro indicadores principais para resumir as condições climáticas de acordo com os dados e filtros selecionados:
+
+- **Temperatura média (°C):** representa a média das temperaturas registradas.
+- **Chuva média (mm):** representa a média do volume de chuva registrado.
+- **Eventos extremos:** apresenta a quantidade total de eventos extremos registrados.
+- **Registros com eventos (%):** indica o percentual de registros em que ocorreu pelo menos um evento extremo.
+
 ## Tecnologias utilizadas
 
 -   Python
@@ -66,15 +75,6 @@ projeto-g1/
 └── notebooks/
     └── analise_clima.ipynb
 ```
-
-## Indicadores utilizados
-
-O projeto utiliza quatro indicadores principais para resumir as condições climáticas de acordo com os dados e filtros selecionados:
-
-- **Temperatura média (°C):** representa a média das temperaturas registradas.
-- **Chuva média (mm):** representa a média do volume de chuva registrado.
-- **Eventos extremos:** apresenta a quantidade total de eventos extremos registrados.
-- **Registros com eventos (%):** indica o percentual de registros em que ocorreu pelo menos um evento extremo.
 
 ## Como executar o projeto
 
