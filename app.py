@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-df = pd.read_csv("simulacao_clima_brasil.csv")
+df = pd.read_csv("dados/simulacao_clima_brasil.csv")
 
 df = df.drop_duplicates()
 
