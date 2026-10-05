@@ -5,75 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 st.set_page_config(
-    page_title="Dashboard Climático no Brasil",
-    page_icon="☀️",
+    page_title="Análise Climática",
+    layout="wide"
 )
 
-st.markdown(
-    """
-    <style>
-        .stApp {
-            background-color: #f7f9fa;
-        }
+df = pd.read_csv("dados/simulacao_clima_brasil.csv")
 
-        .block-container {
-            max-width: 1100px;
-            padding-top: 2rem;
-            padding-bottom: 3rem;
-        }
-
-        h1, h2, h3 {
-            color: #34424c;
-        }
-
-        h1 {
-            margin-bottom: 0.3rem;
-        }
-
-        div[data-testid="stMetric"] {
-            background-color: white;
-            border: 1px solid #dbe3e8;
-            border-top: 4px solid #3b82b8;
-            border-radius: 10px;
-            padding: 16px;
-        }
-
-        div[data-testid="stMetric"]:nth-child(even) {
-            border-top-color: #f2c94c;
-        }
-
-        section[data-testid="stSidebar"] {
-            background-color: #eef2f4;
-        }
-
-        hr {
-            border: none;
-            border-top: 1px solid #dbe3e8;
-            margin: 1.8rem 0;
-        }
-
-        .intro {
-            padding: 18px 20px;
-            margin: 10px 0 24px;
-            background-color: #eaf5fb;
-            border-left: 5px solid #3b82b8;
-            border-radius: 8px;
-            color: #34424c;
-        }
-
-        .info {
-            padding: 16px 18px;
-            background-color: #fff8df;
-            border-left: 5px solid #f2c94c;
-            border-radius: 8px;
-            color: #34424c;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-df = pd.read_csv("simulacao_clima_brasil.csv")
 df = df.drop_duplicates()
 
 df["data"] = pd.to_datetime(df["data"])
@@ -111,6 +48,10 @@ df["nivel_alerta"] = pd.Categorical(
 
 df = df.dropna(subset=["data", "regiao", "uf", "cidade"])
 
+df["data"] = pd.to_datetime(df["data"])
+df["trimestre"] = df["data"].dt.quarter
+df["nome_mes"] = df["data"].dt.month_name()
+
 meses = {
     1: "Janeiro",
     2: "Fevereiro",
@@ -126,55 +67,57 @@ meses = {
     12: "Dezembro"
 }
 
-df["trimestre"] = df["data"].dt.quarter
 df["nome_mes"] = df["mes"].map(meses)
+
 df["amplitude_termica"] = (
     df["temperatura_maxima"] - df["temperatura_minima"]
 )
+
 df["teve_evento_extremo"] = np.where(
     df["eventos_extremos"] > 0,
     "Sim",
     "Não"
 )
 
-st.title("☀️ Dashboard Climático no Brasil")
+eventos_regiao = df.groupby("regiao")["eventos_extremos"].sum()
+eventos_ano = df.groupby("ano")["eventos_extremos"].sum()
 
-st.markdown(
-    """
-    <div class="intro">
-        Explore as condições climáticas registradas no Brasil entre
-        <strong>2015 e 2024</strong>. Use os filtros para comparar períodos
-        e regiões e observar a ocorrência de eventos extremos.
-    </div>
-    """,
-    unsafe_allow_html=True
+colunas = [
+    "temperatura_media",
+    "chuva_mm",
+    "umidade",
+    "velocidade_vento",
+    "eventos_extremos"
+]
+
+correlacao = df[colunas].corr()
+
+st.title("Análise Climática e Eventos Extremos no Brasil")
+
+st.write(
+    "Análise das condições climáticas registradas entre 2015 e 2024, "
+    "com foco na ocorrência de eventos extremos e nas diferenças "
+    "entre regiões e períodos."
 )
 
-st.sidebar.title("Filtros")
-st.sidebar.caption(
-    "Selecione as opções abaixo para atualizar os resultados do dashboard."
-)
-
-anos_disponiveis = sorted(df["ano"].dropna().unique())
-regioes_disponiveis = sorted(df["regiao"].dropna().unique())
-alertas_disponiveis = df["nivel_alerta"].dropna().unique().tolist()
+st.sidebar.header("Filtros")
 
 ano = st.sidebar.multiselect(
     "Ano",
-    anos_disponiveis,
-    default=anos_disponiveis
+    sorted(df["ano"].unique()),
+    default=sorted(df["ano"].unique())
 )
 
 regiao = st.sidebar.multiselect(
     "Região",
-    regioes_disponiveis,
-    default=regioes_disponiveis
+    sorted(df["regiao"].unique()),
+    default=sorted(df["regiao"].unique())
 )
 
 alerta = st.sidebar.multiselect(
     "Nível de alerta",
-    alertas_disponiveis,
-    default=alertas_disponiveis
+    df["nivel_alerta"].dropna().unique().tolist(),
+    default=df["nivel_alerta"].dropna().unique().tolist()
 )
 
 df_filtrado = df[
@@ -184,10 +127,7 @@ df_filtrado = df[
 ]
 
 if df_filtrado.empty:
-    st.warning(
-        "Nenhum registro foi encontrado com os filtros selecionados. "
-        "Altere uma ou mais opções para continuar."
-    )
+    st.warning("Não há dados para os filtros selecionados.")
     st.stop()
 
 temperatura = df_filtrado["temperatura_media"].mean()
@@ -197,193 +137,121 @@ percentual = (
     df_filtrado["teve_evento_extremo"].eq("Sim").mean() * 100
 )
 
-st.subheader("Visão geral")
-st.caption(
-    "Principais indicadores calculados de acordo com os filtros selecionados."
-)
-
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric(
-    "Temperatura média",
-    f"{temperatura:.2f} °C"
+col1.metric("Temperatura média", f"{temperatura:.2f} °C")
+col2.metric("Chuva média", f"{chuva:.2f} mm")
+col3.metric("Eventos extremos", int(eventos))
+col4.metric("Registros com eventos", f"{percentual:.2f}%")
+
+st.subheader("Dados por Região")
+
+tabela = df_filtrado.groupby("regiao").agg(
+    temperatura_media=("temperatura_media", "mean"),
+    chuva_media=("chuva_mm", "mean"),
+    eventos_extremos=("eventos_extremos", "sum")
+).reset_index()
+
+st.dataframe(tabela.round(2), use_container_width=True)
+
+st.subheader("Eventos Extremos por Ano")
+
+eventos_ano_filtrado = (
+    df_filtrado.groupby("ano")["eventos_extremos"].sum()
 )
 
-col2.metric(
-    "Chuva média",
-    f"{chuva:.2f} mm"
-)
-
-col3.metric(
-    "Eventos extremos",
-    int(eventos)
-)
-
-col4.metric(
-    "Registros com eventos",
-    f"{percentual:.2f}%"
-)
-
-st.divider()
-
-st.subheader("Comparação entre regiões")
-st.caption(
-    "Resumo das médias de temperatura e chuva e do total de eventos "
-    "extremos em cada região selecionada."
-)
-
-tabela = (
-    df_filtrado.groupby("regiao")
-    .agg(
-        temperatura_media=("temperatura_media", "mean"),
-        chuva_media=("chuva_mm", "mean"),
-        eventos_extremos=("eventos_extremos", "sum")
-    )
-    .reset_index()
-)
-
-tabela = tabela.rename(
-    columns={
-        "regiao": "Região",
-        "temperatura_media": "Temperatura média (°C)",
-        "chuva_media": "Chuva média (mm)",
-        "eventos_extremos": "Eventos extremos"
-    }
-)
-
-st.dataframe(
-    tabela.round(2),
-    use_container_width=True,
-    hide_index=True
-)
-
-st.divider()
-
-st.subheader("Eventos extremos ao longo dos anos")
-st.caption(
-    "O gráfico mostra como a quantidade de eventos extremos varia "
-    "durante o período selecionado."
-)
-
-eventos_ano = (
-    df_filtrado.groupby("ano")["eventos_extremos"]
-    .sum()
-)
-
-fig, ax = plt.subplots(figsize=(9, 4))
+fig, ax = plt.subplots(figsize=(8, 4))
 
 ax.plot(
-    eventos_ano.index,
-    eventos_ano.values,
-    marker="o",
-    linewidth=2
+    eventos_ano_filtrado.index,
+    eventos_ano_filtrado.values,
+    marker="o"
 )
 
 ax.set_xlabel("Ano")
-ax.set_ylabel("Quantidade de eventos")
-ax.grid(alpha=0.25)
+ax.set_ylabel("Eventos extremos")
+ax.set_title("Eventos Extremos por Ano")
+ax.grid(True)
 
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig)
+
 plt.close(fig)
 
-st.divider()
+st.subheader("Eventos Extremos por Região")
 
-st.subheader("Eventos extremos por região")
-st.caption(
-    "Compare o total de eventos extremos registrado nas regiões "
-    "selecionadas."
-)
-
-eventos_regiao = (
+eventos_regiao_filtrado = (
     df_filtrado.groupby("regiao")["eventos_extremos"]
     .sum()
     .sort_values(ascending=False)
 )
 
-fig, ax = plt.subplots(figsize=(9, 4))
+fig, ax = plt.subplots(figsize=(8, 4))
 
 sns.barplot(
-    x=eventos_regiao.index,
-    y=eventos_regiao.values,
+    x=eventos_regiao_filtrado.index,
+    y=eventos_regiao_filtrado.values,
     ax=ax
 )
 
 ax.set_xlabel("Região")
-ax.set_ylabel("Quantidade de eventos")
-ax.tick_params(axis="x", rotation=20)
+ax.set_ylabel("Eventos extremos")
+ax.set_title("Eventos Extremos por Região")
+ax.tick_params(axis="x", rotation=30)
 
-st.pyplot(fig, use_container_width=True)
+st.pyplot(fig)
+
 plt.close(fig)
 
-st.divider()
+st.subheader("Correlação entre Variáveis")
 
-st.subheader("Relação entre as variáveis")
-st.caption(
-    "A matriz de correlação ajuda a observar como as variáveis "
-    "climáticas se relacionam nos dados selecionados. Valores próximos "
-    "de 1 ou -1 indicam relações mais fortes."
-)
-
-colunas_correlacao = [
-    "temperatura_media",
-    "chuva_mm",
-    "umidade",
-    "velocidade_vento",
-    "eventos_extremos"
-]
-
-correlacao = df_filtrado[colunas_correlacao].corr()
+correlacao_filtrada = df_filtrado[colunas].corr()
 
 fig, ax = plt.subplots(figsize=(8, 5))
 
 sns.heatmap(
-    correlacao,
+    correlacao_filtrada,
     annot=True,
     fmt=".2f",
-    cmap="Blues",
-    vmin=-1,
-    vmax=1,
+    cmap="coolwarm",
     ax=ax
 )
 
-ax.set_xticklabels(
-    ["Temperatura", "Chuva", "Umidade", "Vento", "Eventos"],
-    rotation=25,
-    ha="right"
-)
+ax.set_title("Correlação entre Variáveis")
 
-ax.set_yticklabels(
-    ["Temperatura", "Chuva", "Umidade", "Vento", "Eventos"],
-    rotation=0
-)
+st.pyplot(fig)
 
-st.pyplot(fig, use_container_width=True)
 plt.close(fig)
 
-st.divider()
+st.subheader("Interpretação")
 
-st.subheader("Resumo dos resultados")
+eventos_regiao_filtrado = (
+    df_filtrado.groupby("regiao")["eventos_extremos"]
+    .sum()
+    .sort_values(ascending=False)
+)
 
-if not eventos_regiao.empty:
-    regiao_destaque = eventos_regiao.idxmax()
-    maior_total = int(eventos_regiao.max())
+if not eventos_regiao_filtrado.empty:
+    regiao_destaque = eventos_regiao_filtrado.idxmax()
 
-    st.markdown(
-        f"""
-        <div class="info">
-            Nos dados selecionados, a região com mais eventos extremos foi
-            <strong>{regiao_destaque}</strong>, com
-            <strong>{maior_total}</strong> ocorrências.
-            A temperatura média foi de <strong>{temperatura:.2f} °C</strong>
-            e a chuva média de <strong>{chuva:.2f} mm</strong>.
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.write(
+        f"A região com maior quantidade de eventos extremos no período "
+        f"selecionado foi {regiao_destaque}."
     )
 
-st.write("")
+    st.write(
+        f"A temperatura média foi de {temperatura:.2f} °C e a chuva média "
+        f"foi de {chuva:.2f} mm."
+    )
+
+st.subheader("Conclusão Executiva")
+
 st.write(
-    "Os filtros permitem observar diferentes recortes dos dados e comparar "
-    "como as condições climáticas e os eventos extremos variam entre "
-    "períodos e regiões."
+    "Os resultados permitem comparar as condições climáticas e a "
+    "ocorrência de eventos extremos entre diferentes períodos e regiões. "
+    "Os indicadores são atualizados conforme os filtros selecionados."
+)
+
+st.write(
+    "Por se tratar de uma base simulada, os resultados representam "
+    "os padrões encontrados nos dados analisados."
 )
